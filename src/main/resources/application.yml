@@ -1,0 +1,34 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+      enabled: true
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: 'health,metrics,prometheus'
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+
+benchmark:
+  file:
+    output-directory: ${FILE_OUTPUT_DIRECTORY:/home/ronyeri/Documentos/local-workspace/java-environment-performance/output}
+
+openapi:
+  info:
+    title: ${API_TITLE:Runtime Environment Benchmark}
+    description: ${API_DESCRIPTION:API for reading and writing CSV files, as well as compressing and decompressing files.}
+    version: ${API_VERSION:1.0.0}
+    developer: ${API_DEVELOPER:Ronyeri Marinho}
+    developerUrl: ${API_DEVELOPER_URL:https://www.linkedin.com/in/ronyeri-marinho/}
+    developerContact: ${API_DEVELOPER_CONTACT:ronyerimarinho19@gmail.com}
