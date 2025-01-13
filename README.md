@@ -54,23 +54,19 @@ Exemplo de configuração:
 FILE_OUTPUT_DIRECTORY=C:\Users\<your_user>\Documents\csv
 ```
 
-## Configuração do Monitoramento
-
-Em breve, será disponibilizado o Docker Compose para configuração de monitoramento utilizando Prometheus e Grafana em conjunto com o Spring Boot Actuator.
-
 ## Como Executar
 
 1. Clone o repositório:
     ```bash
-    git clone https://github.com/ronny-souza/java-environment-performance.git
+    git clone https://github.com/ronny-souza/java-environment-performance-without-database.git
     ```
 
 2. Navegue até o diretório do projeto.
 
 3. Configure a variável de ambiente.
     ```bash
-    export FILE_OUTPUT_DIRECTORY=C:\Users\<your_user>\Documents\csv  # Para Linux/Mac
-    set FILE_OUTPUT_DIRECTORY=C:\Users\<your_user>\Documents\csv  # Para Windows
+    export FILE_OUTPUT_DIRECTORY=<your_directory>  # Para Linux/Mac
+    set FILE_OUTPUT_DIRECTORY=<your_directory>  # Para Windows
     ```
 
 4.  Compile o projeto:
@@ -84,6 +80,43 @@ Em breve, será disponibilizado o Docker Compose para configuração de monitora
     ```
 
 6. Acesse a aplicação em `http://localhost:8080`.
+
+## Configuração com a GraalVM Native Image
+Para a configuração da GraalVM Native Image, uma máquina Linux foi utilizada, e alguns passos adicionais se fazem necessários. A versão utilizada é a Oracle GraalVM 17.0.12.
+
+1. Instalar alguns pacotes adicionais necessários utilizados para a construção da imagem nativa:
+    ```bash
+    sudo apt-get install build-essential
+    ```
+
+2. Instalar o seguinte pacote:
+    ```bash
+    sudo apt-get install zlib1g-dev
+    ```
+
+3. Configurações de reflexão
+
+<p>Inicialmente, haverão problemas com a reflexão, dada a natureza da GraalVM Native Image, que não reconhece classes que utilizam reflexão dentro da aplicação nativamente. Por isso, é necessária a execução de um agente para monitorar o uso da aplicação e escrever automaticamente um arquivo de configurações de reflexão que o processo de construção da imagem nativa irá ler para registrar as classes, métodos e atributos. Então o primeiro passo é construir um executável comum da aplicação, que pode ser feito com o comando abaixo:
+
+   ```bash
+    mvn clean package -DskipTests
+   ```
+
+<p>Em seguida, deverá realizar a execução do executável gerado, mas com parâmetros adicionais que irão ativar o agente de monitoramento e registro de classes, e configurar o diretório onde ficarão os arquivos JSON gerados pelo agente. É importante ressaltar que o diretório de saída configurado aqui, também deve ser o mesmo configurado no `pom.xml`, na opção `-H:ConfigurationFileDirectories`.</p>
+
+```bash
+java -Dspring.aot.enabled=true -agentlib:native-image-agent=config-output-dir=./native-image/reflection -jar target/benchmark-0.0.1-SNAPSHOT.jar
+```
+
+<p>Após isso, quando a aplicação estiver executando, execute o máximo de operações possíveis, para que o agente alcance mais classes e assim registre-as. Um ponto importante é que, mesmo com o agente, não há 100% de garantia de que a aplicação irá conseguir alcançar todas as classes necessárias, e por isso erros na geração da imagem podem ocorrer durante o processo, acusando problemas com classes não reconhecidas. Se isso ocorrer, você precisará ler os logs que a GraalVM retorna, e assim adicionar as classes no arquivo JSON manualmente, o que não é um processo difícil, apenas trabalhoso e demorado.</p>
+
+4. Geração da imagem nativa
+
+O processo de geração da imagem nativa pode levar um tempo considerável, e isso pode depender de fatores como o tamanho da aplicação, por exemplo. Em meu caso, particularmente, durou cerca de 20 minutos.
+
+```bash
+mvn -Pnative native:compile -DskipTests
+```
 
 ## Licença
 
