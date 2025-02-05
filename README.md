@@ -15,11 +15,6 @@ Este projeto foi desenvolvido para realizar benchmarks de uso de recursos comput
 - **Java 17**
 - **Spring Boot 3**
 - **Univocity Parsers 2.9.1**
-- **MariaDB 10.6**
-- **Docker**
-- **Prometheus**
-- **Grafana**
-- **Spring Boot Actuator**
 
 ## Estrutura do CSV
 
